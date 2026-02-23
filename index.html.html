@@ -1,0 +1,633 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joni Nykänen – Rovio AdMon Intern Application</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --text: #e6edf3;
+      --red: #f85149;
+      --blue: #58a6ff;
+      --surface: #161b22;
+      --border: #30363d;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      transition: width 0.45s ease;
+      z-index: 1000;
+    }
+
+    /* ── Slider ── */
+    #slider {
+      height: 100vh;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: stretch;
+      opacity: 0;
+      transform: translateX(50px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+      padding-top: 4px;
+      padding-bottom: 140px;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: all;
+    }
+
+    .slide.exit-left {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+
+    /* ── 50/50 columns ── */
+    .col-media, .col-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 48px;
+    }
+
+    .col-media {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .col-media img {
+      max-width: 100%;
+      max-height: 65vh;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    /* ── Slide 1: Cover Letter ── */
+    #slide-1 .col-media { gap: 22px; }
+
+    #slide-1 .col-media img {
+      width: 170px;
+      height: 170px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid var(--blue);
+      box-shadow: 0 0 28px rgba(88, 166, 255, 0.25);
+    }
+
+    .profile-name {
+      font-size: clamp(22px, 2.4vw, 34px);
+      font-weight: 800;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .profile-title {
+      font-size: clamp(12px, 1.2vw, 16px);
+      color: var(--blue);
+      text-align: center;
+      opacity: 0.9;
+    }
+
+    /* ── Text column ── */
+    .slide-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 10px;
+    }
+
+    .slide-header {
+      font-size: clamp(22px, 2.8vw, 40px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 22px;
+      color: var(--text);
+    }
+
+    .slide-body {
+      font-size: clamp(13px, 1.2vw, 16px);
+      line-height: 1.8;
+      color: #8b949e;
+      overflow-y: auto;
+      max-height: 52vh;
+      padding-right: 6px;
+    }
+
+    .slide-body::-webkit-scrollbar { width: 3px; }
+    .slide-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Cover letter content */
+    .cl p { margin-bottom: 12px; }
+    .cl ul { list-style: none; padding: 0; }
+    .cl ul li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 12px;
+    }
+    .cl ul li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--blue);
+      font-weight: 700;
+    }
+    .cl a { color: var(--blue); text-decoration: none; }
+    .cl a:hover { text-decoration: underline; }
+
+    /* ── Insight box ── */
+    .insight-box {
+      margin-top: 30px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--red);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+
+    .insight-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--red);
+      white-space: nowrap;
+      padding-top: 3px;
+    }
+
+    .insight-value {
+      font-size: clamp(12px, 1.1vw, 15px);
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    /* ── Slide 3: Video ── */
+    .video-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      max-height: 48vh;
+      border-radius: 10px;
+      background: #000;
+      display: block;
+    }
+
+    .video-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-play {
+      background: var(--blue);
+      color: #0d1117;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .btn-play:hover { background: #79c0ff; }
+
+    .volume-label {
+      font-size: 11px;
+      color: #8b949e;
+      white-space: nowrap;
+    }
+
+    input[type="range"].vol-slider {
+      appearance: none;
+      -webkit-appearance: none;
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      accent-color: var(--blue);
+    }
+
+    /* ── Slide 5: Outro — single flex parent, no nested wrapper ── */
+    #slide-5 {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 80px 140px;
+    }
+
+    .outro-header {
+      font-size: clamp(38px, 5.5vw, 76px);
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--red) 0%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+      line-height: 1.1;
+    }
+
+    .outro-body {
+      font-size: clamp(15px, 1.5vw, 20px);
+      color: #8b949e;
+      max-width: 680px;
+      line-height: 1.75;
+      margin-bottom: 48px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 56px;
+      justify-content: center;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value {
+      font-size: clamp(34px, 4.5vw, 60px);
+      font-weight: 900;
+      color: var(--blue);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #8b949e;
+    }
+
+    .btn-cta {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 16px 44px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-cta:hover {
+      background: #ff6b6b;
+      transform: translateY(-2px);
+    }
+
+    /* ── Footer nav ── */
+    #nav-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 68px;
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 999;
+    }
+
+    .nav-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      min-width: 120px;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.2;
+      cursor: default;
+    }
+
+    .nav-dots {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      border: none;
+    }
+
+    .nav-dot.active {
+      background: var(--blue);
+      transform: scale(1.4);
+    }
+
+    /* ── Mobile: stack at 850px ── */
+    @media (max-width: 850px) {
+      html, body { overflow: auto; }
+      #slider { height: auto; }
+      .slide {
+        position: relative;
+        flex-direction: column;
+        transform: none !important;
+        opacity: 1 !important;
+        pointer-events: all !important;
+        display: none;
+        padding-bottom: 140px;
+      }
+      .slide.active { display: flex; }
+      .col-media {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 32px 24px;
+      }
+      .col-text { padding: 32px 24px; }
+      .slide-body { max-height: none; }
+      #nav-footer { padding: 0 16px; }
+      .stats-row { gap: 28px; }
+      #slide-5 { padding: 40px 24px 140px; }
+      .nav-btn { min-width: 80px; font-size: 12px; padding: 8px 12px; }
+    }
+  </style>
+  </head>
+  <body>
+
+  <div id="progress-bar" style="width: 20%;"></div>
+
+  <div id="slider">
+
+    <!-- ── SLIDE 1: Cover Letter ── -->
+    <div class="slide active" id="slide-1">
+      <div class="col-media">
+        <img src="assets/mina.png" alt="Joni Nykänen">
+        <div class="profile-name">Joni Nykänen</div>
+        <div class="profile-title">Master's Student, Digital Marketing &amp; Analytics</div>
+      </div>
+      <div class="col-text">
+        <div class="slide-label">Cover Letter</div>
+        <h1 class="slide-header">Hi Rovio AdMon Team,</h1>
+        <div class="slide-body cl">
+          <p>Great advertising monetization in mobile gaming requires a perfect balance of deep data analysis and
+  creative problem-solving. As a Master's student in Digital Marketing and Analytics at the University of Eastern
+  Finland, I thrive at exactly this intersection.</p>
+          <p>To demonstrate my approach, I have built a strategic Cross-Promotion AdMon Funnel (Angry Birds 2 x Sonic
+  Blitz), which you can explore on the next page.</p>
+          <p>When I saw your opening for the AdMon Intern role, I knew it was the perfect opportunity to bring my skills
+   to the SEGA family and help craft joy for millions of players. Here is how my background aligns with your needs for
+  Summer 2026:</p>
+          <ul>
+            <li><strong>Data-Driven Mindset:</strong> My Master's studies and Bachelor's in Marketing &amp; Management
+  have given me a strong quantitative foundation. I am highly comfortable diving into datasets using Excel and analytics
+   tools to find key insights. Although I am new to SQL, my highly adaptive nature ensures I will pick it up
+  quickly.</li>
+            <li><strong>Creative Mock-ups &amp; AI Efficiency:</strong> I don't just crunch numbers; I can visualize
+  solutions. With my strong proficiency in Adobe Creative Suite, photography, and video creation, conceptualizing and
+  designing ad placement mock-ups comes naturally to me. I also actively leverage AI tools (such as various LLMs,
+  Higgsfield AI, and vibe coding) to streamline creative processes and build high-quality assets—just like the ones in
+  the project on the following pages.</li>
+            <li><strong>Ad Ecosystems &amp; Organization:</strong> Thanks to my digital marketing studies and interest
+  in SEO, I have a solid understanding of digital ad networks. Additionally, my versatile work experience has equipped
+  me with strong project management skills and the ability to communicate smoothly across different teams.</li>
+          </ul>
+          <p>I am highly organized, proactive, and always eager to learn new tools quickly. I am fully prepared to start
+   in May 2026 and work in the hybrid model at your Espoo HQ.</p>
+          <p>You can check out my blogs and visual content on my website: <a href="https://joninykanen.com"
+  target="_blank" rel="noopener">joninykanen.com</a></p>
+          <p>Please proceed to the next page to see my AdMon strategy in action! I would love to bring my blend of
+  analytics and creativity to your team. Let's connect and discuss how I can help optimize Rovio's ad campaigns this
+  summer.</p>
+          <p><em>Best regards,<br>Joni Nykänen</em></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 2: Step 1 – The Hook ── -->
+    <div class="slide" id="slide-2">
+      <div class="col-media">
+        <img src="assets/angrybirds.png" alt="Angry Birds – Loss Aversion">
+      </div>
+      <div class="col-text">
+        <div class="slide-label">Step 1 of 3</div>
+        <h2 class="slide-header">Loss Aversion &amp; Engagement</h2>
+        <div class="slide-body">
+          <p>We leverage the player's natural desire to avoid losing their progress. By offering a rewarded video ad at
+  the most critical pain point—right as the level is about to end in failure—we maximize the opt-in rate. This strategic
+   placement ensures that the player is highly motivated to engage with the ad to save their progress.</p>
+        </div>
+        <div class="insight-box">
+          <div class="insight-label">STRATEGY</div>
+          <div class="insight-value">Placement at peak emotional engagement to maximize opt-in rates</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 3: Step 2 – The Video ── -->
+    <div class="slide" id="slide-3">
+      <div class="col-media">
+        <div class="video-wrapper">
+          <video id="ad-video" src="assets/sonic_video.mp4" preload="metadata"></video>
+          <div class="video-controls">
+            <button class="btn-play" id="btn-play">&#9654; Play</button>
+            <span class="volume-label">Volume</span>
+            <input type="range" class="vol-slider" id="vol-slider" min="0" max="1" step="0.01" value="0.5">
+          </div>
+        </div>
+      </div>
+      <div class="col-text">
+        <div class="slide-label">Step 2 of 3</div>
+        <h2 class="slide-header">Maintaining High Interest</h2>
+        <div class="slide-body">
+          <p>The seamless visual transition from the Angry Birds environment to the Sonic universe acts as a powerful
+  routine breaker. This high-energy character showcase is designed to immediately grab attention and sustain engagement.
+   Our goal is to maximize the video completion rate by providing high-quality, relevant content.</p>
+        </div>
+        <div class="insight-box">
+          <div class="insight-label">TARGET METRIC</div>
+          <div class="insight-value">Aiming for high VCR (Video Completion Rate) via routine-breaking visuals</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 4: Step 3 – Conversion ── -->
+    <div class="slide" id="slide-4">
+      <div class="col-media">
+        <img src="assets/mockup_endframe.png" alt="End Frame Mockup">
+      </div>
+      <div class="col-text">
+        <div class="slide-label">Step 3 of 3</div>
+        <h2 class="slide-header">A Fair Value Exchange</h2>
+        <div class="slide-body">
+          <p>This final frame represents a perfect win-win scenario. The player receives an immediate reward to continue
+   their session, while we drive high-intent pre-registrations for the new Sonic title. This approach significantly
+  lowers user acquisition costs by successfully cross-promoting to our loyal existing player base.</p>
+        </div>
+        <div class="insight-box">
+          <div class="insight-label">ROI ANALYSIS</div>
+          <div class="insight-value">Reducing CAC (Customer Acquisition Cost) by leveraging internal traffic</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 5: Outro — single flex parent, perfectly centered ── -->
+    <div class="slide" id="slide-5">
+      <h2 class="outro-header">Let's optimize together!</h2>
+      <p class="outro-body">Thank you for exploring my AdMon cross-promotion strategy. I am eager to bring this blend of
+   analytical thinking and creative execution to the Rovio team this summer.</p>
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Strategic Steps</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">VCR</div>
+          <div class="stat-label">Completion Focus</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">Low</div>
+          <div class="stat-label">CAC / Acquisition Cost</div>
+        </div>
+      </div>
+      <a href="https://joninykanen.com" class="btn-cta" target="_blank" rel="noopener">Visit joninykanen.com</a>
+    </div>
+
+  </div><!-- /#slider -->
+
+  <!-- ── Footer Navigation ── -->
+  <nav id="nav-footer">
+    <button class="nav-btn" id="btn-prev" disabled>&#8592; Back</button>
+    <div class="nav-dots">
+      <button class="nav-dot active" data-idx="0" aria-label="Slide 1"></button>
+      <button class="nav-dot" data-idx="1" aria-label="Slide 2"></button>
+      <button class="nav-dot" data-idx="2" aria-label="Slide 3"></button>
+      <button class="nav-dot" data-idx="3" aria-label="Slide 4"></button>
+      <button class="nav-dot" data-idx="4" aria-label="Slide 5"></button>
+    </div>
+    <button class="nav-btn" id="btn-next">Next: Step 1 &#8594;</button>
+  </nav>
+
+  <script>
+    const slides   = document.querySelectorAll('.slide');
+    const dots     = document.querySelectorAll('.nav-dot');
+    const btnPrev  = document.getElementById('btn-prev');
+    const btnNext  = document.getElementById('btn-next');
+    const bar      = document.getElementById('progress-bar');
+
+    const nextLabels = ['Next: Step 1', 'Next: Step 2', 'Next: Step 3', 'Next: Outro', ''];
+
+    let current = 0;
+
+    function goTo(idx) {
+      if (idx < 0 || idx >= slides.length || idx === current) return;
+
+      const prev = current;
+      slides[prev].classList.add('exit-left');
+      slides[prev].classList.remove('active');
+      setTimeout(() => slides[prev].classList.remove('exit-left'), 480);
+
+      if (prev === 2) {
+        const v = document.getElementById('ad-video');
+        if (!v.paused) { v.pause(); document.getElementById('btn-play').innerHTML = '&#9654; Play'; }
+      }
+
+      current = idx;
+      slides[current].classList.add('active');
+
+      dots.forEach((d, i) => d.classList.toggle('active', i === current));
+      bar.style.width = ((current + 1) / slides.length * 100) + '%';
+
+      btnPrev.disabled = current === 0;
+      btnNext.disabled = current === slides.length - 1;
+      btnNext.innerHTML = current < slides.length - 1
+        ? nextLabels[current] + ' &#8594;'
+        : '';
+    }
+
+    btnPrev.addEventListener('click', () => goTo(current - 1));
+    btnNext.addEventListener('click', () => goTo(current + 1));
+    dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.idx)));
+
+    document.addEventListener('keydown', e => {
+      if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+      else if (['ArrowLeft', 'ArrowUp'].includes(e.key))    { e.preventDefault(); goTo(current - 1); }
+    });
+
+    const video    = document.getElementById('ad-video');
+    const btnPlay  = document.getElementById('btn-play');
+    const volSlide = document.getElementById('vol-slider');
+
+    video.volume = 0.5;
+
+    btnPlay.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        btnPlay.innerHTML = '&#9646;&#9646; Pause';
+      } else {
+        video.pause();
+        btnPlay.innerHTML = '&#9654; Play';
+      }
+    });
+
+    video.addEventListener('ended', () => { btnPlay.innerHTML = '&#9654; Play'; });
+    volSlide.addEventListener('input', () => { video.volume = volSlide.value; });
+  </script>
+  </body>
+  </html>
